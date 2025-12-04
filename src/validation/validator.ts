@@ -1,0 +1,104 @@
+import { ThaiAddress } from '../types/address';
+import { addresses } from '../data/addresses';
+import { normalizeThaiText } from '../utils/helpers';
+
+/**
+ * Validate postal code format (5 digits)
+ */
+export function validatePostalCode(code: string): boolean {
+  if (!code || typeof code !== 'string') {
+    return false;
+  }
+  const trimmed = code.trim();
+  return /^\d{5}$/.test(trimmed);
+}
+
+/**
+ * Check if a province exists in the address database
+ */
+export function isValidProvince(province: string): boolean {
+  if (!province || province.trim() === '') {
+    return false;
+  }
+  const normalizedSearch = normalizeThaiText(province);
+  return addresses.some((address) => normalizeThaiText(address.province) === normalizedSearch);
+}
+
+/**
+ * Check if a district exists in the address database
+ * Optionally validate within a specific province
+ */
+export function isValidDistrict(district: string, province?: string): boolean {
+  if (!district || district.trim() === '') {
+    return false;
+  }
+  const normalizedDistrict = normalizeThaiText(district);
+  const normalizedProvince = province ? normalizeThaiText(province) : null;
+
+  return addresses.some((address) => {
+    const matchesDistrict = normalizeThaiText(address.district) === normalizedDistrict;
+    if (normalizedProvince) {
+      return matchesDistrict && normalizeThaiText(address.province) === normalizedProvince;
+    }
+    return matchesDistrict;
+  });
+}
+
+/**
+ * Check if a sub-district exists in the address database
+ * Optionally validate within a specific district and province
+ */
+export function isValidSubDistrict(
+  subDistrict: string,
+  district?: string,
+  province?: string
+): boolean {
+  if (!subDistrict || subDistrict.trim() === '') {
+    return false;
+  }
+  const normalizedSubDistrict = normalizeThaiText(subDistrict);
+  const normalizedDistrict = district ? normalizeThaiText(district) : null;
+  const normalizedProvince = province ? normalizeThaiText(province) : null;
+
+  return addresses.some((address) => {
+    const matchesSubDistrict = normalizeThaiText(address.subDistrict) === normalizedSubDistrict;
+    const matchesDistrict = normalizedDistrict
+      ? normalizeThaiText(address.district) === normalizedDistrict
+      : true;
+    const matchesProvince = normalizedProvince
+      ? normalizeThaiText(address.province) === normalizedProvince
+      : true;
+
+    return matchesSubDistrict && matchesDistrict && matchesProvince;
+  });
+}
+
+/**
+ * Validate a complete address object
+ */
+export function validateAddress(address: ThaiAddress): boolean {
+  if (!address || typeof address !== 'object') {
+    return false;
+  }
+
+  const { province, district, subDistrict, postalCode } = address;
+
+  // Check all required fields exist
+  if (!province || !district || !subDistrict || !postalCode) {
+    return false;
+  }
+
+  // Validate postal code format
+  if (!validatePostalCode(postalCode)) {
+    return false;
+  }
+
+  // Check if the address exists in database
+  return addresses.some(
+    (addr) =>
+      normalizeThaiText(addr.province) === normalizeThaiText(province) &&
+      normalizeThaiText(addr.district) === normalizeThaiText(district) &&
+      normalizeThaiText(addr.subDistrict) === normalizeThaiText(subDistrict) &&
+      addr.postalCode === postalCode
+  );
+}

@@ -1,0 +1,83 @@
+import { ThaiAddress, SearchOptions } from '../types/address';
+import { addresses } from '../data/addresses';
+import { normalizeThaiText } from '../utils/helpers';
+
+/**
+ * Search addresses by multiple criteria
+ */
+export function searchAddresses(options: SearchOptions): ThaiAddress[] {
+  if (!options || Object.keys(options).length === 0) {
+    return [];
+  }
+
+  return addresses.filter((address) => {
+    let matches = true;
+
+    if (options.province) {
+      const normalizedSearch = normalizeThaiText(options.province);
+      const normalizedAddress = normalizeThaiText(address.province);
+      matches = matches && normalizedAddress.includes(normalizedSearch);
+    }
+
+    if (options.district) {
+      const normalizedSearch = normalizeThaiText(options.district);
+      const normalizedAddress = normalizeThaiText(address.district);
+      matches = matches && normalizedAddress.includes(normalizedSearch);
+    }
+
+    if (options.subDistrict) {
+      const normalizedSearch = normalizeThaiText(options.subDistrict);
+      const normalizedAddress = normalizeThaiText(address.subDistrict);
+      matches = matches && normalizedAddress.includes(normalizedSearch);
+    }
+
+    if (options.postalCode) {
+      matches = matches && address.postalCode === options.postalCode;
+    }
+
+    return matches;
+  });
+}
+
+/**
+ * Find addresses by postal code
+ */
+export function findByPostalCode(postalCode: string): ThaiAddress[] {
+  if (!postalCode || postalCode.trim() === '') {
+    return [];
+  }
+  return addresses.filter((address) => address.postalCode === postalCode.trim());
+}
+
+/**
+ * Find addresses by province name
+ */
+export function findByProvince(province: string): ThaiAddress[] {
+  if (!province || province.trim() === '') {
+    return [];
+  }
+  const normalizedSearch = normalizeThaiText(province);
+  return addresses.filter((address) =>
+    normalizeThaiText(address.province).includes(normalizedSearch)
+  );
+}
+
+/**
+ * Find addresses by district name
+ * Optionally filter by province
+ */
+export function findByDistrict(district: string, province?: string): ThaiAddress[] {
+  if (!district || district.trim() === '') {
+    return [];
+  }
+  const normalizedDistrict = normalizeThaiText(district);
+  const normalizedProvince = province ? normalizeThaiText(province) : null;
+
+  return addresses.filter((address) => {
+    const matchesDistrict = normalizeThaiText(address.district).includes(normalizedDistrict);
+    if (normalizedProvince) {
+      return matchesDistrict && normalizeThaiText(address.province).includes(normalizedProvince);
+    }
+    return matchesDistrict;
+  });
+}

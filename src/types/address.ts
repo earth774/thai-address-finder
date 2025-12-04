@@ -1,0 +1,18 @@
+export interface ThaiAddress {
+  province: string;
+  district: string;
+  subDistrict: string;
+  postalCode: string;
+}
+
+export interface SearchOptions {
+  province?: string;
+  district?: string;
+  subDistrict?: string;
+  postalCode?: string;
+}
+
+export interface AutocompleteOptions {
+  query: string;
+  limit?: number;
+}

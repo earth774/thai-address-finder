@@ -1,0 +1,25 @@
+# Exclude source maps from published package
+**/*.js.map
+**/*.d.ts.map
+
+# Exclude test files
+tests/
+**/*.test.ts
+**/*.spec.ts
+
+# Exclude coverage reports
+coverage/
+
+# Exclude source files
+src/
+
+# Exclude config files
+tsconfig*.json
+jest.config.js
+.eslintrc.json
+
+# Exclude development files
+*.log
+.DS_Store
+node_modules/
+
