@@ -29,6 +29,14 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/earth774/thai-address-finder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/earth774/thai-address-finder/issues"
+  },
+  "homepage": "https://github.com/earth774/thai-address-finder#readme",
   "files": [
     "dist"
   ],
