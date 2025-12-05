@@ -8,6 +8,7 @@
     "build": "npm run build:data && tsc -p tsconfig.build.json",
     "build:data": "node scripts/minify-addresses.js",
     "serve:data": "node scripts/serve-data-server.js",
+    "pack:dry-run": "npm pack --dry-run",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint src tests --ext .ts",
@@ -40,8 +41,7 @@
   },
   "homepage": "https://github.com/earth774/thai-address-finder#readme",
   "files": [
-    "dist",
-    "public/data"
+    "dist"
   ],
   "devDependencies": {
     "@types/jest": "^29.5.12",

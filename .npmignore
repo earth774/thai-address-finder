@@ -2,6 +2,9 @@
 **/*.js.map
 **/*.d.ts.map
 
+# Exclude static assets not meant for the package
+public/data
+
 # Exclude test files
 tests/
 **/*.test.ts
@@ -12,6 +15,7 @@ coverage/
 
 # Exclude source files
 src/
+src/data/*.json
 
 # Exclude config files
 tsconfig*.json

@@ -9,7 +9,6 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const srcDir = path.join(root, 'src', 'data');
-const publicDir = path.join(root, 'public', 'data');
 const distDir = path.join(root, 'dist', 'data');
 
 const files = ['geography.json', 'districts.json', 'provinces.json', 'subdistricts.json'];
@@ -28,20 +27,16 @@ function minifyFile(fileName) {
   const parsed = JSON.parse(raw);
   const minified = JSON.stringify(parsed);
 
-  ensureDir(publicDir);
   ensureDir(distDir);
 
-  const publicPath = path.join(publicDir, fileName);
   const distPath = path.join(distDir, fileName);
 
-  fs.writeFileSync(publicPath, minified);
   fs.writeFileSync(distPath, minified);
 
   return {
     file: fileName,
     originalBytes: Buffer.byteLength(raw, 'utf8'),
     minifiedBytes: Buffer.byteLength(minified, 'utf8'),
-    publicPath,
     distPath,
   };
 }
