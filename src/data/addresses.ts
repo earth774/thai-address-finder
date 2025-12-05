@@ -31,18 +31,6 @@ const DEFAULT_BASE_URL = (() => {
   return '/data';
 })();
 
-async function loadBundledGeography(): Promise<GeographyItem[]> {
-  const module = (await import('./geography.json')) as
-    | { default?: GeographyItem[] }
-    | GeographyItem[];
-  const geographyData =
-    (module as { default?: GeographyItem[] }).default ?? (module as GeographyItem[]);
-  if (!Array.isArray(geographyData)) {
-    throw new Error('Bundled geography data is unavailable or invalid.');
-  }
-  return geographyData;
-}
-
 function mapGeographyToAddresses(geographyData: GeographyItem[]): ThaiAddress[] {
   return geographyData.map((item) => ({
     province: item.provinceNameTh,
@@ -204,26 +192,6 @@ export async function initAddressData(options?: { baseUrl?: string }): Promise<T
   }
 
   const baseUrl = resolveBaseUrl(options?.baseUrl);
-  const useBundledData = baseUrl === DEFAULT_BASE_URL;
-
-  if (useBundledData) {
-    loadPromise = loadBundledGeography()
-      .then((geographyData) => {
-        cachedAddresses = mapGeographyToAddresses(geographyData);
-        return cachedAddresses;
-      })
-      .catch((err) => {
-        throw new Error(
-          `Failed to load bundled geography data. Set THAI_ADDRESS_DATA_URL or initAddressData({ baseUrl }) to a hosted /data path. ${err.message}`
-        );
-      })
-      .finally(() => {
-        loadPromise = null;
-      });
-
-    return loadPromise;
-  }
-
   const url = `${baseUrl}/${GEOGRAPHY_FILE}`;
 
   loadPromise = fetchFn(url)
