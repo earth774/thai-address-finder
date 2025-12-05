@@ -5,7 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run build:data && tsc -p tsconfig.build.json",
+    "build:data": "node scripts/minify-addresses.js",
+    "serve:data": "node scripts/serve-data-server.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint src tests --ext .ts",
@@ -38,7 +40,8 @@
   },
   "homepage": "https://github.com/earth774/thai-address-finder#readme",
   "files": [
-    "dist"
+    "dist",
+    "public/data"
   ],
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -51,6 +54,8 @@
     "jest": "^29.7.0",
     "prettier": "^3.2.4",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "compression": "^1.7.4",
+    "express": "^4.18.2"
   }
 }
