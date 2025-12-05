@@ -14,6 +14,10 @@ let cachedAddresses: ThaiAddress[] | null = null;
 
 const geographyFileName = 'geography.json';
 
+function isNodeEnv(): boolean {
+  return typeof process !== 'undefined' && !!process?.versions?.node;
+}
+
 function resolveBaseDir(): string {
   // __dirname exists in CJS (ts-jest) and fallback for ESM using import.meta.url
   if (typeof __dirname !== 'undefined') {
@@ -37,11 +41,17 @@ function resolveBaseDir(): string {
     return path.dirname(filePath);
   }
 
-  // Last resort: current working directory
-  return process.cwd();
+  // Last resort: current working directory (Node) or empty string (browser)
+  return isNodeEnv() && typeof process.cwd === 'function' ? process.cwd() : '';
 }
 
 function resolveGeographyPath(): string {
+  if (!isNodeEnv()) {
+    throw new Error(
+      'Local geography data loading is supported only in Node. For browser use, import the package build that fetches remote data or supply THAI_ADDRESS_DATA_URL.'
+    );
+  }
+
   const baseDir = resolveBaseDir();
   const candidates = [
     path.join(baseDir, geographyFileName),
