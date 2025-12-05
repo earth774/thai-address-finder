@@ -21,7 +21,8 @@ export default {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transform: {
     '^.+\\.ts$': 'ts-jest'
-  }
+  },
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts']
 };
 
 
