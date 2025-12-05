@@ -12,7 +12,20 @@ interface GeographyItem {
 
 let cachedAddresses: ThaiAddress[] | null = null;
 
-const geographyFileName = 'geography.json';
+const GEOGRAPHY_FILE = 'geography.json';
+const DEFAULT_BASE_URL =
+  'https://raw.githubusercontent.com/earth774/thai-address-finder/refs/heads/main/public/data';
+
+function normalizeBaseUrl(baseUrl: string): string {
+  return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+}
+
+function resolveBaseUrl(override?: string): string {
+  const envBase =
+    typeof process !== 'undefined' && process.env ? process.env.THAI_ADDRESS_DATA_URL : undefined;
+  const selected = override ?? envBase ?? DEFAULT_BASE_URL;
+  return normalizeBaseUrl(selected);
+}
 
 function isNodeEnv(): boolean {
   return typeof process !== 'undefined' && !!process?.versions?.node;
@@ -54,14 +67,14 @@ function resolveGeographyPath(): string {
 
   const baseDir = resolveBaseDir();
   const candidates = [
-    path.join(baseDir, geographyFileName),
+    path.join(baseDir, GEOGRAPHY_FILE),
     path.join(baseDir, 'geography.min.json'),
-    path.join(baseDir, '..', 'data', geographyFileName),
-    path.join(baseDir, '..', '..', 'public', 'data', geographyFileName),
-    path.join(baseDir, '..', '..', 'dist', 'data', geographyFileName),
-    path.join(process.cwd(), 'public', 'data', geographyFileName),
-    path.join(process.cwd(), 'dist', 'data', geographyFileName),
-    path.join(process.cwd(), 'src', 'data', geographyFileName),
+    path.join(baseDir, '..', 'data', GEOGRAPHY_FILE),
+    path.join(baseDir, '..', '..', 'public', 'data', GEOGRAPHY_FILE),
+    path.join(baseDir, '..', '..', 'dist', 'data', GEOGRAPHY_FILE),
+    path.join(process.cwd(), 'public', 'data', GEOGRAPHY_FILE),
+    path.join(process.cwd(), 'dist', 'data', GEOGRAPHY_FILE),
+    path.join(process.cwd(), 'src', 'data', GEOGRAPHY_FILE),
   ];
 
   const seen = new Set<string>();
@@ -93,6 +106,12 @@ export function loadAddresses(): ThaiAddress[] {
     return cachedAddresses;
   }
 
+  if (!isNodeEnv()) {
+    throw new Error(
+      'Address data not loaded. In browser environments, call initAddressData() with a remote data URL.'
+    );
+  }
+
   const geographyData = readGeography();
   cachedAddresses = (geographyData as GeographyItem[]).map((item) => ({
     province: item.provinceNameTh,
@@ -110,7 +129,11 @@ export function loadAddresses(): ThaiAddress[] {
  */
 export function getAddresses(): ThaiAddress[] {
   if (!cachedAddresses) {
-    loadAddresses();
+    if (isNodeEnv()) {
+      loadAddresses();
+    } else {
+      throw new Error('Address data not loaded. Call initAddressData() before using address APIs.');
+    }
   }
   return cachedAddresses as ThaiAddress[];
 }
@@ -119,8 +142,41 @@ export function getAddresses(): ThaiAddress[] {
  * Async-friendly initializer to align with the public API surface.
  * For the in-repo build we load synchronously from disk.
  */
-export async function initAddressData(): Promise<ThaiAddress[]> {
-  return loadAddresses();
+export async function initAddressData(options?: { baseUrl?: string }): Promise<ThaiAddress[]> {
+  if (cachedAddresses) {
+    return cachedAddresses;
+  }
+
+  if (isNodeEnv()) {
+    return loadAddresses();
+  }
+
+  const fetchFn = (globalThis as any).fetch as
+    | ((input: unknown, init?: unknown) => Promise<{ ok: boolean; status: number; statusText: string; json: () => Promise<unknown> }>)
+    | undefined;
+
+  if (!fetchFn) {
+    throw new Error('Global fetch is not available. Provide a fetch polyfill in this environment.');
+  }
+
+  const baseUrl = resolveBaseUrl(options?.baseUrl);
+  const url = `${baseUrl}/${GEOGRAPHY_FILE}`;
+
+  const geographyData = await fetchFn(url).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+    }
+    return response.json() as Promise<GeographyItem[]>;
+  });
+
+  cachedAddresses = (geographyData as GeographyItem[]).map((item) => ({
+    province: item.provinceNameTh,
+    district: item.districtNameTh,
+    subDistrict: item.subdistrictNameTh,
+    postalCode: String(item.postalCode),
+  }));
+
+  return cachedAddresses;
 }
 
 // Eagerly load once on module import so consumers retain a synchronous API.
