@@ -18,35 +18,10 @@ npm install thai-address-finder
 
 ## Usage
 
-> Important: The package no longer bundles JSON data. You must initialize once
-> (and have network access) so the library can fetch data from GitHub or your
-> own URL.
-
-### Initialize data (required)
-
-```typescript
-import { initAddressData } from 'thai-address-finder';
-
-// Call once during app startup
-await initAddressData({
-  // Optional: override base URL (default pulls from GitHub raw)
-  // baseUrl: 'https://raw.githubusercontent.com/earth774/thai-address-finder/refs/heads/main/public/data'
-});
-```
-
-You can also set an environment variable instead of passing `baseUrl`:
-
-- `THAI_ADDRESS_DATA_URL=https://your-domain/thai-address-data`
-
-After initialization, all search/autocomplete/validation helpers are synchronous
-as before.
-
 ### Basic Search
 
 ```typescript
-import { initAddressData, searchAddresses, findByPostalCode } from 'thai-address-finder';
-
-await initAddressData();
+import { searchAddresses, findByPostalCode } from 'thai-address-finder';
 
 // Search by postal code
 const addresses = findByPostalCode('10100');
@@ -70,9 +45,7 @@ const results = searchAddresses({
 ### Autocomplete
 
 ```typescript
-import { initAddressData, autocomplete } from 'thai-address-finder';
-
-await initAddressData();
+import { autocomplete } from 'thai-address-finder';
 
 // Get address suggestions
 const suggestions = autocomplete({
@@ -88,14 +61,11 @@ console.log(suggestions);
 
 ```typescript
 import {
-  initAddressData,
   validatePostalCode,
   validateAddress,
   isValidProvince,
   isValidDistrict
 } from 'thai-address-finder';
-
-await initAddressData();
 
 // Validate postal code format
 validatePostalCode('10100'); // true
@@ -122,13 +92,10 @@ isValidDistrict('ปทุมวัน', 'กรุงเทพมหานค�
 
 ```typescript
 import {
-  initAddressData,
   getProvinces,
   getDistricts,
   getSubDistricts
 } from 'thai-address-finder';
-
-await initAddressData();
 
 // Get all provinces
 const provinces = getProvinces();
@@ -182,8 +149,6 @@ interface AutocompleteOptions {
 ```
 
 ### Search Functions
-
-> All functions require `initAddressData()` to be called once beforehand.
 
 #### `searchAddresses(options: SearchOptions): ThaiAddress[]`
 
@@ -365,11 +330,12 @@ thai-address-finder/
 
 ## Data Source
 
-- Default: downloads from GitHub raw data set at
-  `https://raw.githubusercontent.com/earth774/thai-address-finder/refs/heads/main/public/data/geography.json`
-  (you can override via `THAI_ADDRESS_DATA_URL` or `initAddressData({ baseUrl })`).
-- For production, consider hosting the JSON yourself (e.g., on your CDN/object
-  storage) to avoid GitHub rate limits and to pin an exact version.
+This library currently includes sample address data. For production use, you should replace the data in `src/data/addresses.ts` with official Thai address data from reliable sources such as:
+
+- Thailand Post (ไปรษณีย์ไทย)
+- Department of Provincial Administration (กรมการปกครอง)
+
+The data structure is designed to be easily replaceable without changing the API.
 
 ## Contributing
 
