@@ -39,7 +39,7 @@
   "bugs": {
     "url": "https://github.com/earth774/thai-address-finder/issues"
   },
-  "homepage": "https://github.com/earth774/thai-address-finder#readme",
+  "homepage": "https://earth774.github.io/thai-address-finder-demo/",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",

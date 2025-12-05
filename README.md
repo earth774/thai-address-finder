@@ -10,6 +10,11 @@ A TypeScript library to search and find Thai address information including provi
 - 📋 **Utilities** - Get lists of provinces, districts, and sub-districts
 - 🇹🇭 **Thai Language Support** - Full support for Thai text search and matching
 
+## Live Demo (React)
+
+- Try the interactive React demo: [Thai Address Finder Demo](https://earth774.github.io/thai-address-finder-demo/)
+- The demo uses this npm package directly, so the behavior matches what you get after installing.
+
 ## Installation
 
 ```bash
@@ -55,6 +60,43 @@ const suggestions = autocomplete({
 
 // Results are sorted by relevance score
 console.log(suggestions);
+```
+
+### React Autocomplete Example
+
+```tsx
+import { useMemo, useState } from 'react';
+import { autocomplete } from 'thai-address-finder';
+
+export function AddressAutocomplete() {
+  const [query, setQuery] = useState('');
+
+  const suggestions = useMemo(
+    () => (query ? autocomplete({ query, limit: 5 }) : []),
+    [query]
+  );
+
+  return (
+    <div>
+      <label htmlFor="address-query">ค้นหาที่อยู่</label>
+      <input
+        id="address-query"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="พิมพ์จังหวัด/อำเภอ/ตำบล/รหัสไปรษณีย์"
+      />
+      <ul>
+        {suggestions.map((item) => (
+          <li
+            key={`${item.province}-${item.district}-${item.subDistrict}-${item.postalCode}`}
+          >
+            {item.subDistrict}, {item.district}, {item.province} {item.postalCode}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 ```
 
 ### Validation
