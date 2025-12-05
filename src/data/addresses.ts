@@ -14,8 +14,22 @@ let cachedAddresses: ThaiAddress[] | null = null;
 let loadPromise: Promise<ThaiAddress[]> | null = null;
 
 const GEOGRAPHY_FILE = 'geography.json';
-const DEFAULT_BASE_URL =
-  'https://raw.githubusercontent.com/earth774/thai-address-finder/refs/heads/main/public/data';
+const DEFAULT_BASE_URL = (() => {
+  try {
+    // Use bundler-resolved asset URL when available to avoid remote fetch defaults
+    const metaUrl = new Function(
+      'return typeof import.meta !== "undefined" ? import.meta.url : undefined;'
+    )() as string | undefined;
+    if (metaUrl) {
+      const geographyAssetUrl = new URL(`../data/${GEOGRAPHY_FILE}`, metaUrl).toString();
+      return geographyAssetUrl.replace(new RegExp(`/${GEOGRAPHY_FILE}$`), '');
+    }
+  } catch {
+    // ignore and fall through to default
+  }
+  // Fallback for environments without import.meta replacement; expect caller to host /data/*
+  return '/data';
+})();
 
 function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
@@ -162,9 +176,7 @@ export async function initAddressData(options?: { baseUrl?: string }): Promise<T
     return loadAddresses();
   }
 
-  const fetchFn = (globalThis as any).fetch as
-    | ((input: unknown, init?: unknown) => Promise<{ ok: boolean; status: number; statusText: string; json: () => Promise<unknown> }>)
-    | undefined;
+  const fetchFn = (globalThis as { fetch?: typeof fetch }).fetch;
 
   if (!fetchFn) {
     throw new Error('Global fetch is not available. Provide a fetch polyfill in this environment.');
@@ -198,4 +210,3 @@ export async function initAddressData(options?: { baseUrl?: string }): Promise<T
 
 // Eagerly load once on module import so consumers retain a synchronous API.
 export const addresses: ThaiAddress[] = isNodeEnv() ? loadAddresses() : (cachedAddresses ?? []);
-
