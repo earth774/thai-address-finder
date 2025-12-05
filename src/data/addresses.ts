@@ -11,6 +11,7 @@ interface GeographyItem {
 }
 
 let cachedAddresses: ThaiAddress[] | null = null;
+let loadPromise: Promise<ThaiAddress[]> | null = null;
 
 const GEOGRAPHY_FILE = 'geography.json';
 const DEFAULT_BASE_URL =
@@ -132,7 +133,13 @@ export function getAddresses(): ThaiAddress[] {
     if (isNodeEnv()) {
       loadAddresses();
     } else {
-      throw new Error('Address data not loaded. Call initAddressData() before using address APIs.');
+      // Kick off async load with default/baseUrl if not already started
+      if (!loadPromise) {
+        void initAddressData().catch(() => {
+          // swallow here; errors are surfaced when awaiting initAddressData
+        });
+      }
+      return [];
     }
   }
   return cachedAddresses as ThaiAddress[];
@@ -145,6 +152,10 @@ export function getAddresses(): ThaiAddress[] {
 export async function initAddressData(options?: { baseUrl?: string }): Promise<ThaiAddress[]> {
   if (cachedAddresses) {
     return cachedAddresses;
+  }
+
+  if (loadPromise) {
+    return loadPromise;
   }
 
   if (isNodeEnv()) {
@@ -162,23 +173,29 @@ export async function initAddressData(options?: { baseUrl?: string }): Promise<T
   const baseUrl = resolveBaseUrl(options?.baseUrl);
   const url = `${baseUrl}/${GEOGRAPHY_FILE}`;
 
-  const geographyData = await fetchFn(url).then((response) => {
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
-    }
-    return response.json() as Promise<GeographyItem[]>;
-  });
+  loadPromise = fetchFn(url)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+      }
+      return response.json() as Promise<GeographyItem[]>;
+    })
+    .then((geographyData) => {
+      cachedAddresses = (geographyData as GeographyItem[]).map((item) => ({
+        province: item.provinceNameTh,
+        district: item.districtNameTh,
+        subDistrict: item.subdistrictNameTh,
+        postalCode: String(item.postalCode),
+      }));
+      return cachedAddresses;
+    })
+    .finally(() => {
+      loadPromise = null;
+    });
 
-  cachedAddresses = (geographyData as GeographyItem[]).map((item) => ({
-    province: item.provinceNameTh,
-    district: item.districtNameTh,
-    subDistrict: item.subdistrictNameTh,
-    postalCode: String(item.postalCode),
-  }));
-
-  return cachedAddresses;
+  return loadPromise;
 }
 
 // Eagerly load once on module import so consumers retain a synchronous API.
-export const addresses: ThaiAddress[] = loadAddresses();
+export const addresses: ThaiAddress[] = isNodeEnv() ? loadAddresses() : (cachedAddresses ?? []);
 
