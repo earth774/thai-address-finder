@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm run build:data && tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "build:data": "node scripts/minify-addresses.js",
     "serve:data": "node scripts/serve-data-server.js",
     "pack:dry-run": "npm pack --dry-run",
@@ -41,7 +41,10 @@
   },
   "homepage": "https://github.com/earth774/thai-address-finder#readme",
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts.map"
   ],
   "devDependencies": {
     "@types/jest": "^29.5.12",

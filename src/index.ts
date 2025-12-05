@@ -1,6 +1,9 @@
 // Export types
 export type { ThaiAddress, SearchOptions, AutocompleteOptions } from './types/address';
 
+// Export data loader
+export { initAddressData, getAddresses } from './data/addresses';
+
 // Export search functions
 export { searchAddresses, findByPostalCode, findByProvince, findByDistrict } from './search/search';
 

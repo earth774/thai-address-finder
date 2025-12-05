@@ -1,5 +1,5 @@
 import { ThaiAddress, SearchOptions } from '../types/address';
-import { addresses } from '../data/addresses';
+import { getAddresses } from '../data/addresses';
 import { normalizeThaiText } from '../utils/helpers';
 
 /**
@@ -10,6 +10,7 @@ export function searchAddresses(options: SearchOptions): ThaiAddress[] {
     return [];
   }
 
+  const addresses = getAddresses();
   return addresses.filter((address) => {
     let matches = true;
 
@@ -46,6 +47,7 @@ export function findByPostalCode(postalCode: string): ThaiAddress[] {
   if (!postalCode || postalCode.trim() === '') {
     return [];
   }
+  const addresses = getAddresses();
   return addresses.filter((address) => address.postalCode === postalCode.trim());
 }
 
@@ -57,6 +59,7 @@ export function findByProvince(province: string): ThaiAddress[] {
     return [];
   }
   const normalizedSearch = normalizeThaiText(province);
+  const addresses = getAddresses();
   return addresses.filter((address) =>
     normalizeThaiText(address.province).includes(normalizedSearch)
   );
@@ -73,6 +76,7 @@ export function findByDistrict(district: string, province?: string): ThaiAddress
   const normalizedDistrict = normalizeThaiText(district);
   const normalizedProvince = province ? normalizeThaiText(province) : null;
 
+  const addresses = getAddresses();
   return addresses.filter((address) => {
     const matchesDistrict = normalizeThaiText(address.district).includes(normalizedDistrict);
     if (normalizedProvince) {

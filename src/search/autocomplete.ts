@@ -1,5 +1,5 @@
 import { ThaiAddress, AutocompleteOptions } from '../types/address';
-import { addresses } from '../data/addresses';
+import { getAddresses } from '../data/addresses';
 import { normalizeThaiText } from '../utils/helpers';
 
 interface ScoredAddress extends ThaiAddress {
@@ -49,6 +49,7 @@ export function autocomplete(options: AutocompleteOptions): ThaiAddress[] {
 
   const normalizedQuery = normalizeThaiText(query);
   const scoredAddresses: ScoredAddress[] = [];
+  const addresses = getAddresses();
 
   addresses.forEach((address) => {
     const score = calculateScore(query, address, normalizedQuery);

@@ -1,5 +1,5 @@
 import { ThaiAddress } from '../types/address';
-import { addresses } from '../data/addresses';
+import { getAddresses } from '../data/addresses';
 import { normalizeThaiText } from '../utils/helpers';
 
 /**
@@ -21,6 +21,7 @@ export function isValidProvince(province: string): boolean {
     return false;
   }
   const normalizedSearch = normalizeThaiText(province);
+  const addresses = getAddresses();
   return addresses.some((address) => normalizeThaiText(address.province) === normalizedSearch);
 }
 
@@ -34,6 +35,7 @@ export function isValidDistrict(district: string, province?: string): boolean {
   }
   const normalizedDistrict = normalizeThaiText(district);
   const normalizedProvince = province ? normalizeThaiText(province) : null;
+  const addresses = getAddresses();
 
   return addresses.some((address) => {
     const matchesDistrict = normalizeThaiText(address.district) === normalizedDistrict;
@@ -59,6 +61,7 @@ export function isValidSubDistrict(
   const normalizedSubDistrict = normalizeThaiText(subDistrict);
   const normalizedDistrict = district ? normalizeThaiText(district) : null;
   const normalizedProvince = province ? normalizeThaiText(province) : null;
+  const addresses = getAddresses();
 
   return addresses.some((address) => {
     const matchesSubDistrict = normalizeThaiText(address.subDistrict) === normalizedSubDistrict;
@@ -94,6 +97,7 @@ export function validateAddress(address: ThaiAddress): boolean {
   }
 
   // Check if the address exists in database
+  const addresses = getAddresses();
   return addresses.some(
     (addr) =>
       normalizeThaiText(addr.province) === normalizeThaiText(province) &&

@@ -1,4 +1,4 @@
-import { addresses } from '../data/addresses';
+import { getAddresses } from '../data/addresses';
 
 /**
  * Normalize Thai text for search comparison
@@ -13,6 +13,7 @@ export function normalizeThaiText(text: string): string {
  */
 export function getProvinces(): string[] {
   const provinceSet = new Set<string>();
+  const addresses = getAddresses();
   addresses.forEach((address) => {
     provinceSet.add(address.province);
   });
@@ -25,6 +26,7 @@ export function getProvinces(): string[] {
 export function getDistricts(province: string): string[] {
   const normalizedProvince = normalizeThaiText(province);
   const districtSet = new Set<string>();
+  const addresses = getAddresses();
   addresses.forEach((address) => {
     if (normalizeThaiText(address.province) === normalizedProvince) {
       districtSet.add(address.district);
@@ -40,6 +42,7 @@ export function getSubDistricts(district: string, province: string): string[] {
   const normalizedDistrict = normalizeThaiText(district);
   const normalizedProvince = normalizeThaiText(province);
   const subDistrictSet = new Set<string>();
+  const addresses = getAddresses();
   addresses.forEach((address) => {
     if (
       normalizeThaiText(address.district) === normalizedDistrict &&
